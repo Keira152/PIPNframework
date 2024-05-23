@@ -33,7 +33,7 @@ class myData(Dataset):
     def __len__(self) -> int:
         return len(self.files1)
     
-    def process(file, is_geometry=True):
+    def process(self, file, is_geometry):
         random.seed(0)
         if is_geometry:
             loaddata = np.loadtxt(file, delimiter='\t')
