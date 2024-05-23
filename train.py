@@ -162,13 +162,13 @@ if __name__ == '__main__':
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=0.5, patience=20)
 
     # Instantiate datasets
-    path_dir1 = args.train_geo_dir if args.train_geo_dir is not None else 'train_data1/'
-    path_dir2 = args.train_sur_dir if args.train_sur_dir is not None else 'train_data2/'
-    path_dir3 = args.val_geo_dir if args.val_geo_dir is not None else 'valid_data1/'
-    path_dir4 = args.val_sur_dir if args.val_sur_dir is not None else 'valid_data2/'
+    path_dir1 = args.train_geo_dir if args.train_geo_dir is not None else 'dataset/train_data1/'
+    path_dir2 = args.train_sur_dir if args.train_sur_dir is not None else 'dataset/train_data2/'
+    path_dir3 = args.val_geo_dir if args.val_geo_dir is not None else 'dataset/valid_data1/'
+    path_dir4 = args.val_sur_dir if args.val_sur_dir is not None else 'dataset/valid_data2/'
 
-    train_dataset = myData(path_dir1, path_dir2, transform=None)
-    valid_dataset = myData(path_dir3, path_dir4, transform=None)
+    train_dataset = myData(path_dir1, path_dir2)
+    valid_dataset = myData(path_dir3, path_dir4)
 
 
     try:
