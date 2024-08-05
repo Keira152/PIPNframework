@@ -1,3 +1,8 @@
 dataset/
 models/
 work_dir/
+__pycache__/
+dataset_unprocessed/
+runs/
+training.log
+checkpoints/

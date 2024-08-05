@@ -2,6 +2,7 @@ import argparse
 import logging
 import os
 import sys
+import math
 
 import torch
 import torch.nn as nn
@@ -43,15 +44,17 @@ def train_net(net,
     ''')
 
     # Train loop
+    min_error = 0.2
     for epoch in range(epochs):
         net.train()
         epoch_loss = 0
         train_error = 0
         batch = 0
-        with tqdm(total=n_train, desc=f'Epoch {epoch + 1}/{epochs}', unit='pcd') as pbar:
+        with tqdm(total=math.ceil(n_train/batch_size), desc=f'Epoch {epoch + 1}/{epochs}', unit='pcd') as pbar:
             for data in train_loader:
                 batch = batch + 1
                 input1 = data['image'].to(device, dtype=torch.float32)
+                input1.requires_grad_(True)
                 input2 = data['surface'].to(device, dtype=torch.float32)
                 label = data['label'].to(device, dtype=torch.float32)
                 tem_pred, matrix3x3, matrix4x4, matrix64x64 = net(input1.transpose(1,2), input2.transpose(1,2))
@@ -88,7 +91,7 @@ def train_net(net,
         net.eval()
         valid_error = 0
         batch = 0
-        with tqdm(total=n_val, desc='Validation round', unit='pcd') as pbar:
+        with tqdm(total=math.ceil(n_val/batch_size), desc='Validation round', unit='pcd') as pbar:
             with torch.no_grad():
                 for data in val_loader:
                     batch = batch + 1
@@ -129,13 +132,13 @@ def get_args():
     parser.add_argument('-vg', '--validation-geometry-dir', type=str, default=None, dest='val_geo_dir')
     parser.add_argument('-vs', '--validation-surface-dir', type=str, default=None, dest='val_sur_dir')
     parser.add_argument('-e', '--epochs', type=int, default=800)
-    parser.add_argument('-b', '--batch-size', type=int, default=3, dset='batch_size')
+    parser.add_argument('-b', '--batch-size', type=int, default=3, dest='batch_size')
     parser.add_argument('-c', '--dir_checkpoint', type=str, default='checkpoints/')
     parser.add_argument('-l', '--load', type=str, default=False, help='Load model from a .pth file', dest='load')
     return parser.parse_args()
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s', filename='training.log')
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s', filename='work_dir/training.log')
     args = get_args()
 
     # Determine device
@@ -146,7 +149,8 @@ if __name__ == '__main__':
     net = PINN()
 
     # Distribute training over GPUs
-    net = nn.DataParallel(net)
+    device_ids = [0]
+    net = nn.DataParallel(net, device_ids=device_ids)
 
     # Load weights from file
     if args.load:
